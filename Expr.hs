@@ -5,9 +5,11 @@ import Data.Map (Map)
 import Data.Map qualified as Map 
 
 
+-- Program has variables that store values, so we introduce map of bindings 
 type Env = Map String Val 
 
 
+-- Our language is statically typed, thus we need some types 
 data Type 
     = Int 
     | Real 
@@ -18,6 +20,7 @@ data Type
     | Fun Type Type 
 
 
+-- Each type has some sort of runtime value 
 data Val 
     = VInt Int 
     | VReal Double 
@@ -28,6 +31,7 @@ data Val
     | VFun String Expr Env 
 
 
+-- Expression is built from literal values, unary and binary operations, function applications, and if-then-else expressions
 data Expr 
     = Lit Val 
     | UnOp UnOp Expr 
@@ -36,6 +40,7 @@ data Expr
     | If Expr Expr Expr 
 
 
+-- Represents all sorts of binary operations 
 data BinOp 
     = Add | Sub | Mul | Div | Pow | IntDiv | Mod 
     | And | Or | Xor 
@@ -43,6 +48,7 @@ data BinOp
     | Concat | Cons 
 
 
+-- Represents all sorts of unary operations 
 data UnOp
     = Inc | Decr | Neg | Fact 
     | Not
