@@ -12,3 +12,4 @@ data Stmt
     | If Expr Block Block 
     | While Expr Block 
     | Block String [String] Block 
+    | Print Expr 
