@@ -34,6 +34,7 @@ data Val
 -- Expression is built from literal values, unary and binary operations, function applications, and if-then-else expressions
 data Expr 
     = Lit Val 
+    | Var String 
     | UnOp UnOp Expr 
     | BinOp BinOp Expr Expr 
     | Apply Val Expr 
