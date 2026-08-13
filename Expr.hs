@@ -39,7 +39,7 @@ data Expr
     | Var String 
     | UnOp UnOp Expr 
     | BinOp BinOp Expr Expr 
-    | Apply Val Expr 
+    | Apply Expr Expr 
     | If Expr Expr Expr 
 
 
