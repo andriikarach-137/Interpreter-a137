@@ -17,6 +17,7 @@ data Type
     | String 
     | Tuple Type Type 
     | List Type 
+    | Dictionary Type Type 
     | Fun Type Type 
 
 
@@ -28,6 +29,7 @@ data Val
     | VString String 
     | VTuple (Val, Val)
     | VList [Val]
+    | VDictionary (Map Val Val) 
     | VFun String Expr Env 
 
 
