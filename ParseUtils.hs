@@ -1,4 +1,4 @@
-module ParserUtils where 
+module ParseUtils where 
 
 
 import Error 
@@ -101,5 +101,5 @@ num :: Parser String
 num = some digit 
 
 
-real :: Parser String 
-real = (++) <$> num <*> ((:) <$> char '.' <*> num)
+float :: Parser String 
+float = (++) <$> num <*> ((:) <$> char '.' <*> num)

@@ -30,7 +30,8 @@ data Val
     | VPair (Val, Val)
     | VList [Val]
     | VDictionary (Map Val Val) 
-    | VFun String Expr Env 
+    | VFun String Expr 
+    deriving (Eq, Ord)
 
 
 -- Expression is built from literal values, unary and binary operations, function applications, and if-then-else expressions
@@ -41,6 +42,7 @@ data Expr
     | BinOp BinOp Expr Expr 
     | Apply Expr Expr 
     | If Expr Expr Expr 
+    deriving (Eq, Ord)
 
 
 -- Represents all sorts of binary operations 
@@ -49,7 +51,7 @@ data BinOp
     | And | Or | Xor 
     | Eq | NEq | LT | GT | LE | GE 
     | Concat | Cons 
-
+    deriving (Eq, Ord)
 
 -- Represents all sorts of unary operations 
 data UnOp
@@ -58,3 +60,4 @@ data UnOp
     | Log | Exp | Sin | Cos | Tan | ASin | ACos | ATan 
     | Head | Tail 
     | Fst | Snd 
+    deriving (Eq, Ord)

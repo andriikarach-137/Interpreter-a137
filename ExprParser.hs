@@ -1,8 +1,10 @@
-module Parser where 
+module ExprParser where 
 
 
 import ParseUtils 
-
+import Expr 
+import Control.Applicative
+import qualified Data.Map as Map
 
 -- BNF 
 
@@ -54,7 +56,7 @@ Utility parsers: @f denotes utility parser constructed as satisfy f
 <num_util>   ::= (<digit>)+
 <digit>      ::= @isDigit 
 
-<real_util>  ::= <num_util> DOT <num_util> 
+<float_util> ::= <num_util> DOT <num_util> 
 
 <item_util>  ::= @(\c -> c /= '\'' && c /= '\"')
 
@@ -114,3 +116,50 @@ DRARR        ::= "=>"
 QM           ::= "?"
 DCLN         ::= "::"
 -}
+
+
+ident :: Parser String 
+ident = (:) <$> alpha <*> many alphanum 
+
+
+int :: Parser Val 
+int = VReal . read <$> num 
+
+
+real :: Parser Val 
+real = VReal . read <$> float  
+
+
+charLit :: Parser Val 
+charLit = VChar <$> item 
+
+
+stringLit :: Parser Val 
+stringLit = VString <$> many item 
+
+
+pair :: Parser Val 
+pair = (curry VPair) <$> (char '(' *> val) <*> (char ',' *> val <* char ')')
+
+
+list :: Parser Val 
+list = VList <$> (char '[' *> ((:) <$> val <*> many (char ',' *> val) <|> pure []) <* char ']')
+
+
+dict :: Parser Val 
+dict = VDictionary . Map.fromList <$> (char '{' *> ((:) <$> dict_entry <*> many (char ',' *> dict_entry) <|> pure []) <* char '}')
+  where
+    dict_entry :: Parser (Val, Val)
+    dict_entry = (,) <$> (val <* string "=>") <*> (val)
+
+
+fun :: Parser Val  
+fun = VFun <$> (string "\\" *> ident) <* string "->" <*> expr 
+
+
+val :: Parser Val 
+val = int <|> real <|> charLit <|> stringLit <|> pair 
+
+
+expr :: Parser Expr 
+expr = undefined 
