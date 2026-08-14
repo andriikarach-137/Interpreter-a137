@@ -15,7 +15,7 @@ data Type
     | Real 
     | Char 
     | String 
-    | Tuple Type Type 
+    | Pair Type Type 
     | List Type 
     | Dictionary Type Type 
     | Fun Type Type 
@@ -27,7 +27,7 @@ data Val
     | VReal Double 
     | VChar Char 
     | VString String 
-    | VTuple (Val, Val)
+    | VPair (Val, Val)
     | VList [Val]
     | VDictionary (Map Val Val) 
     | VFun String Expr Env 

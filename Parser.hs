@@ -30,13 +30,13 @@ import ParseUtils
 <postfix>    ::= <primary> (DPLUS | DMINUS | EXCL)* 
 <primary>    ::= <ident> LARR <expr> | <literal> | LBR <expr> RBR 
 <ident>      ::= <alpha_util> (<alnum_util>)* 
-<literal>    ::= <int_lit> | <real_lit> | <char_lit> | <string_lit> | <tuple_lit> | 
+<literal>    ::= <int_lit> | <real_lit> | <char_lit> | <string_lit> | <pair_lit> | 
                  <list_lit> | <dict_lit> | <fun_lit>
 <int_lit>    ::= <num_util>
 <real_lit>   ::= <real_util>
 <char_lit>   ::= SQ <item_util> SQ
 <string_lit> ::= DQ (<item_util>)* DQ
-<tuple_lit>  ::= LB <expr> COM <expr> RB
+<pair_lit>   ::= LB <expr> COM <expr> RB
 <list_lit>   ::= LSB ((<expr> (COM <expr>)*) | eps) RSB
 <dict_lit>   ::= LCB ((<dict_entry> (COM <dict_entry>)*) | eps) RCB
 <dict_entry> ::= <expr> CLN <expr>
