@@ -48,7 +48,7 @@ Utility parsers:
 <num_util>   ::= (<digit>)+ 
 <digit>      ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 
-<real_util>  ::= (MINUS | eps) <num_util> DOT <num_util> 
+<real_util>  ::= <num_util> DOT <num_util> 
 
 <item_util>  ::= ANY_CHAR 
 

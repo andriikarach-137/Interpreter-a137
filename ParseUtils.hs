@@ -102,7 +102,4 @@ num = some digit
 
 
 real :: Parser String 
-real = (:) <$> char '-' <*> rest <|> rest 
-  where
-    rest :: Parser String 
-    rest = (++) <$> num <*> ((:) <$> char '-' <*> num)
+real = (++) <$> num <*> ((:) <$> char '.' <*> num)
