@@ -74,7 +74,7 @@ satisfy f = Parser $ \s -> case s of
 
 
 item :: Parser Char 
-item = satisfy (const True)
+item = satisfy (\c -> c /= '\"' && c /= '\'') 
 
 
 char :: Char -> Parser Char 
