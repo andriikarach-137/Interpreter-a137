@@ -118,6 +118,24 @@ DCLN         ::= "::"
 -}
 
 
+-- Parser for binary left-associative expression. (BinOp, String) pairs represent BinOp and corresponding string 
+binL :: [(BinOp, String)] -> Parser Expr -> Parser Expr
+binL ops p = foldl (\e (op, e') -> BinOp op e e') <$> p <*> many binL' 
+  where
+    binL' :: Parser (BinOp, Expr)
+    binL' = (,) <$> (foldr (\(bop, s) px -> bop <$ string s <|> px) empty ops) <*> p 
+
+
+binR :: [(BinOp, String)] -> Parser Expr -> Parser Expr
+binR ops p = p <**> (foldr step id <$> many binR')
+  where
+    step :: (BinOp, Expr) -> (Expr -> Expr) -> Expr -> Expr 
+    step (op, e) f x = BinOp op x (f e) 
+
+    binR' :: Parser (BinOp, Expr)
+    binR' = (,) <$> (foldr (\(bop, s) px -> bop <$ string s <|> px) empty ops) <*> p 
+
+
 ident :: Parser String 
 ident = (:) <$> alpha <*> many alphanum 
 
@@ -161,6 +179,73 @@ fun = LFun <$> (char '\\' *> ident) <*> expr
 
 lit :: Parser Expr 
 lit = Lit <$> (int <|> real <|> charLit <|> stringLit <|> pair <|> list <|> dict <|> fun)
+
+
+primary :: Parser Expr 
+primary = Var <$> ident <|> lit <|> char '(' *> expr <* char ')'
+
+
+postfix :: Parser Expr 
+postfix = foldl (flip UnOp) <$> primary <*> many op 
+  where
+    op :: Parser UnOp 
+    op = Inc <$ string "++" <|> Dec <$ string "--" <|> Fact <$ char '!'
+
+
+apply :: Parser Expr 
+apply = binL [(Apply, "$")] postfix 
+
+
+prefix :: Parser Expr 
+prefix = (flip $ foldr UnOp) <$> (many op) <*> apply 
+  where
+    op :: Parser UnOp
+    op = 
+      Not <$ char '!' <|> 
+      Log <$ string "log" <|> 
+      Exp <$ string "exp" <|> 
+      Sin <$ string "sin" <|>  
+      Cos <$ string "cos" <|> 
+      Tan <$ string "tan" <|> 
+      ASin <$ string "asin" <|> 
+      ACos <$ string "acos" <|> 
+      ATan <$ string "atan" 
+
+    
+pow :: Parser Expr 
+pow = binR [(Pow, "**")] prefix 
+
+
+proddiv :: Parser Expr 
+proddiv = binL [(Mul, "*"), (Div, "/")] pow 
+
+
+sumdiff :: Parser Expr 
+sumdiff = binL [(Add, "+"), (Sub, "-")] proddiv 
+
+
+concat :: Parser Expr 
+concat = binR [(Concat, "++")] sumdiff
+
+
+comp :: Parser Expr 
+comp = undefined 
+
+
+andBin :: Parser Expr 
+andBin = binL [(And, "&&")] comp 
+
+
+xorBin :: Parser Expr 
+xorBin = binL [(Xor, "^^")] andBin
+
+
+orBin :: Parser Expr 
+orBin = binL [(Or, "||")] xorBin 
+
+
+consOp :: Parser Expr 
+consOp = binR [(Cons, "::")] orBin 
 
 
 expr :: Parser Expr 

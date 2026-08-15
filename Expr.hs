@@ -40,7 +40,6 @@ data Expr
     | Var String 
     | UnOp UnOp Expr 
     | BinOp BinOp Expr Expr 
-    | Apply Expr Expr 
     | If Expr Expr Expr 
     deriving (Eq, Ord)
 
@@ -64,11 +63,12 @@ data BinOp
     | And | Or | Xor 
     | Eq | NEq | LT | GT | LE | GE 
     | Concat | Cons 
+    | Apply
     deriving (Eq, Ord)
 
 -- Represents all sorts of unary operations 
 data UnOp
-    = Inc | Decr | Neg | Fact 
+    = Inc | Dec | Neg | Fact 
     | Not
     | Log | Exp | Sin | Cos | Tan | ASin | ACos | ATan 
     | Head | Tail 
