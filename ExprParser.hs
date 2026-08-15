@@ -122,43 +122,45 @@ ident :: Parser String
 ident = (:) <$> alpha <*> many alphanum 
 
 
-int :: Parser Val 
-int = VReal . read <$> num 
+int :: Parser Lit 
+int = LInt . read <$> num 
 
 
-real :: Parser Val 
-real = VReal . read <$> float  
+real :: Parser Lit 
+real = LReal . read <$> float 
 
 
-charLit :: Parser Val 
-charLit = VChar <$> item 
+charLit :: Parser Lit 
+charLit =LChar <$> item 
 
 
-stringLit :: Parser Val 
-stringLit = VString <$> many item 
+stringLit :: Parser Lit 
+stringLit = LString <$> many item 
 
 
-pair :: Parser Val 
-pair = (curry VPair) <$> (char '(' *> val) <*> (char ',' *> val <* char ')')
+pair :: Parser Lit 
+pair = (curry LPair) <$> (char '(' *> lit <* char ',') <*> (lit <* char ')')
 
 
-list :: Parser Val 
-list = VList <$> (char '[' *> ((:) <$> val <*> many (char ',' *> val) <|> pure []) <* char ']')
+list :: Parser Lit
+list = 
+  LList <$> (char '[' *> (((:) <$> lit <*> (char ',' *> many lit)) <|> pure []) <* char ']')
 
 
-dict :: Parser Val 
-dict = VDictionary . Map.fromList <$> (char '{' *> ((:) <$> dict_entry <*> many (char ',' *> dict_entry) <|> pure []) <* char '}')
-  where
-    dict_entry :: Parser (Val, Val)
-    dict_entry = (,) <$> (val <* string "=>") <*> (val)
+dict :: Parser Lit 
+dict = 
+  LDictionary . Map.fromList <$> (char '{' *> (((:) <$> entry <*> (char ',' *> many entry)) <|> pure []) <* char '}')
+    where
+      entry :: Parser (Expr, Expr)
+      entry = (,) <$> expr <*> (string "=>" *> expr)
 
 
-fun :: Parser Val  
-fun = VFun <$> (string "\\" *> ident) <* string "->" <*> expr 
+fun :: Parser Lit
+fun = LFun <$> (char '\\' *> ident) <*> expr 
 
 
-val :: Parser Val 
-val = int <|> real <|> charLit <|> stringLit <|> pair 
+lit :: Parser Expr 
+lit = Lit <$> (int <|> real <|> charLit <|> stringLit <|> pair <|> list <|> dict <|> fun)
 
 
 expr :: Parser Expr 
