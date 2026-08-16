@@ -20,8 +20,8 @@ import qualified Data.Map as Map
                  LCB <type> DRARR <type> RCB
 <type_arrow> ::= RARR <type> | eps 
 
-<expr>       ::= <cons> <ternary> 
-<ternary>    ::= QM <expr> CLN <expr> | eps 
+<expr>       ::= <if_expr> | <cons> 
+<if_expr>    ::= IF <expr> QM <expr> CLN <expr>
 <cons>       ::= <or> | <or> DCLN <cons> 
 <or>         ::= <xor> (OR <xor>)*
 <xor>        ::= <and> (XOR <and>)* 
@@ -224,12 +224,20 @@ sumdiff :: Parser Expr
 sumdiff = binL [(Add, "+"), (Sub, "-")] proddiv 
 
 
-concat :: Parser Expr 
-concat = binR [(Concat, "++")] sumdiff
+concatBin :: Parser Expr 
+concatBin = binR [(Concat, "++")] sumdiff
 
 
 comp :: Parser Expr 
-comp = undefined 
+comp = flip BinOp <$> concatBin
+  <*> (Eq <$ string "=" <|> 
+       NEq <$ string "/=" <|> 
+       LE <$ string "<=" <|> 
+       Expr.LT <$ string "<" <|>
+       GE <$ string ">=" <|>
+       Expr.GT <$ string ">") 
+  <*> concatBin 
+  <|> concatBin 
 
 
 andBin :: Parser Expr 
@@ -248,5 +256,11 @@ consOp :: Parser Expr
 consOp = binR [(Cons, "::")] orBin 
 
 
-expr :: Parser Expr 
-expr = undefined 
+ternary :: Parser Expr 
+ternary = If <$> (string "if" *> expr) <*> (string "?" *> expr) <*> (string ":" *> expr)
+
+
+expr :: Parser Expr
+expr = ternary <|> consOp 
+
+
