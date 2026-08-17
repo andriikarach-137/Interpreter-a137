@@ -9,3 +9,4 @@ data ParseError
     = NoRuleMatchesError 
     | NothingToParseError 
     | DoesNotSatisfyError 
+    | KeywordIdentifierError 

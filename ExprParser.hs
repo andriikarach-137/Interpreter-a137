@@ -6,7 +6,7 @@ import Expr
 import Stmt 
 import Control.Applicative
 import qualified Data.Map as Map
-import Language.Haskell.TH.Lib (typeP)
+import Error 
 
 -- BNF 
 
@@ -140,7 +140,9 @@ binR ops p = p <**> (foldr step id <$> many binR')
 
 
 ident :: Parser String 
-ident = (:) <$> alpha <*> many alphanum 
+ident = do 
+  name <- (:) <$> alpha <*> many alphanum
+  if valid name then pure name else Parser $ \_ -> Left $ ParseError KeywordIdentifierError
 
 
 int :: Parser Lit 
@@ -303,3 +305,21 @@ stmt = printParser <|> declare <|> assign
 
 program :: Parser [Stmt]
 program = many (stmt <* char ';')
+
+
+valid :: String -> Bool
+valid "print" = False 
+valid "Int" = False  
+valid "Real" = False  
+valid "Char" = False  
+valid "String" = False  
+valid "if" = False 
+valid "log" = False  
+valid "exp" = False  
+valid "sin" = False  
+valid "cos" = False  
+valid "tan" = False  
+valid "asin" = False  
+valid "acos" = False  
+valid "atan" = False  
+valid _ = True 
