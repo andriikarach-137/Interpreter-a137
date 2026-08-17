@@ -3,17 +3,20 @@ module ExprParser where
 
 import ParseUtils 
 import Expr 
+import Stmt 
 import Control.Applicative
 import qualified Data.Map as Map
+import Language.Haskell.TH.Lib (typeP)
 
 -- BNF 
 
 {-
 
 <program>    ::= (<stmt> SEMI)*
-<stmt>       ::= (<assign> | <print>) 
+<stmt>       ::= (<declare> | <assign> | <print>) 
 
-<assign>     ::= <type> <ident> LARR <expr>
+<declare>    ::= <ident> AT <type> 
+<assign>     ::= <ident> LARR <expr>
 <print>      ::= PRINT <expr> 
 <type>       ::= <type_atom> <type_arrow>
 <type_atom>  ::= INT | REAL | CHAR | STRING | LSB <type> RSB | LB <type> COM <type> RB |
@@ -149,20 +152,20 @@ real = LReal . read <$> float
 
 
 charLit :: Parser Lit 
-charLit =LChar <$> item 
+charLit = LChar <$> (char '\'' *> item <* char '\'') 
 
 
 stringLit :: Parser Lit 
-stringLit = LString <$> many item 
+stringLit = LString <$> many (char '\"' *> item <* char '\"') 
 
 
 pair :: Parser Lit 
-pair = (curry LPair) <$> (char '(' *> lit <* char ',') <*> (lit <* char ')')
+pair = (curry LPair) <$> (char '(' *> expr <* char ',') <*> (expr <* char ')')
 
 
 list :: Parser Lit
 list = 
-  LList <$> (char '[' *> (((:) <$> lit <*> (char ',' *> many lit)) <|> pure []) <* char ']')
+  LList <$> (char '[' *> (((:) <$> expr <*> (char ',' *> many expr)) <|> pure []) <* char ']')
 
 
 dict :: Parser Lit 
@@ -174,7 +177,7 @@ dict =
 
 
 fun :: Parser Lit
-fun = LFun <$> (char '\\' *> ident) <*> expr 
+fun = LFun <$> (char '\\' *> ident) <*> (string "->" *> expr) 
 
 
 lit :: Parser Expr 
@@ -264,3 +267,39 @@ expr :: Parser Expr
 expr = ternary <|> consOp 
 
 
+typeAtom :: Parser Type 
+typeAtom 
+  =   Int <$ string "Int" 
+  <|> Real <$ string "Real"
+  <|> Char <$ string "Char"
+  <|> String <$ string "String"
+  <|> List <$> (char '[' *> typeAtom <* char ']')
+  <|> Pair <$> (char '(' *> typeAtom <* char ',') <*> (typeAtom <* char ')')
+  <|> Dictionary <$> (char '{' *> typeAtom <* string "=>") <*> (typeAtom <* char '}') 
+
+
+typeParser :: Parser Type 
+typeParser =  flip ($) <$> typeAtom <*> typeArr 
+  where
+    typeArr :: Parser (Type -> Type)
+    typeArr = (flip Fun) <$> (string "->" *> typeParser) <|> pure id 
+
+
+printParser :: Parser Stmt 
+printParser = string "print" *> (Print <$> expr)
+
+
+declare :: Parser Stmt 
+declare = Declare <$> ident <*> (char '@' *> typeParser)
+
+
+assign :: Parser Stmt 
+assign = Assign <$> ident <*> (string "<-" *> expr)
+ 
+
+stmt :: Parser Stmt 
+stmt = printParser <|> declare <|> assign
+
+
+program :: Parser [Stmt]
+program = many (stmt <* char ';')

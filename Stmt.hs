@@ -4,9 +4,7 @@ module Stmt where
 import Expr 
 
 
-type Block = [Stmt]
-
-
 data Stmt 
-    = Assign String Expr 
+    = Declare String Type 
+    | Assign String Expr 
     | Print Expr 
